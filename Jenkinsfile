@@ -51,7 +51,7 @@ pipeline{
                  type: 'war']], 
                  credentialsId: 'nexus', 
                  groupId: "${GroupId}", 
-                 nexusUrl: '18.142.91.252:8081', 
+                 nexusUrl: '13.212.122.168:8081', 
                  nexusVersion: 'nexus3', 
                  protocol: 'http', 
                  repository: "${NexusRepo}", 
@@ -59,6 +59,26 @@ pipeline{
                 }
             }
         }
+
+        stage ('Deploy'){
+            steps {
+                echo "Deploying...."
+                sshPublisher(publishers: 
+                [sshPublisherDesc(
+                    configName: 'AnsibleController', 
+                    transfers: [
+                        sshTransfer(
+                            cleanRemote: false, 
+                            execCommand: 'ansible-playbook /home/ansibleadmin/playbooks/download-deploy.yaml -i /home/ansibleadmin/playbooks/hosts', 
+                            execTimeout: 120000, 
+                        )], 
+                    usePromotionTimestamp: false, 
+                    useWorkspaceInPromotion: false, 
+                    verbose: false)])
+            }
+        }
+    }
+}
 
         // Stage3 : Publish the source code to Sonarqube
         // stage ('Sonarqube Analysis'){
@@ -71,8 +91,4 @@ pipeline{
         //     }
         // }
 
-        
-        
-    }
-
-}
+    
